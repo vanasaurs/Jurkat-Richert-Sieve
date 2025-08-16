@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Jurkat-Richert Sieve</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Jurkat-Richert Sieve</h1>
+</header>
+<p>Let <span
+class="math inline">\(\mathcal{A}=\{a(n)\}_{n=1}^{\infty}\)</span> be a
+sequence of non-negative integers and <span
+class="math display">\[|\mathcal{A}|=\sum_{n=1}^{\infty} a(n)&lt;\infty
+.\]</span> Let <span class="math inline">\(\mathcal{P}\)</span> be a set
+of primes and let <span class="math inline">\(z \in \mathbb{R}, z \geq
+2\)</span>. Let <span class="math display">\[P(z)=\prod_{\substack{p \in
+\mathcal{P} \\ p&lt; z}} p .\]</span> We define the sieving function as
+<span class="math display">\[S(\mathcal{A}, \mathcal{P}, z)=\sum_{(n,
+P(z))=1} a(n)\]</span> Since <span class="math display">\[\sum_{d \mid
+m} \mu(d)= \begin{cases}1 &amp; \text { if } m=1 \\ 0 &amp; \text {
+otherwise }\end{cases}\]</span> we obtain <span
+class="math display">\[S(\mathcal{A}, \mathcal{P}, z)=\sum_{d \mid P(z)}
+\mu(d)\left|\mathcal{A}_{d}\right|\]</span> where <span
+class="math display">\[\left|\mathcal{A}_{d}\right|=\sum_{d\mid n} a(n)
+\quad \text { converges. }\]</span> Assume that for every <span
+class="math inline">\(n \geq 1\)</span>, we have a multiplicative
+function <span class="math inline">\(g(d)\)</span> such that <span
+class="math display">\[0 \leqslant g(p)&lt;1\]</span> for all <span
+class="math inline">\(p \in \mathcal{P}\)</span>.<br />
+Then for <span class="math inline">\(d \mid P(z)\)</span> square-free
+integers define <span
+class="math display">\[r(d)=\left|\mathcal{A}_{d}\right|-\sum_{n} a(n)
+g_{n}(d)\]</span> and it follows that <span
+class="math display">\[\begin{aligned}
+S(\mathcal{A}, \mathcal{P}, z) &amp; =\sum_{d \mid P(z)}
+\mu(d)\left(\sum_{n} a(n) g_{n}(d)+r(d)\right) \\
+&amp; =\sum_{n} a(n) \prod_{p \mid P(z)}\left(1-g_{n}(p)\right)+\sum_{d
+\mid P(z)} \mu(d) r(d)\\
+&amp;=\sum_{n} a(n) V_{n}(z)+R(z)
+\end{aligned}\]</span> where <span
+class="math display">\[V_{n}(z)=\prod_{p \mid
+P(z)}\left(1-g_{n}(p)\right) \  \text { and } \ R(z)=\sum_{d \mid P(z)}
+\mu(d) r(d)\]</span> However, <span class="math inline">\(R(z)\)</span>
+sometimes causes "trouble" as it is too large to estimate; in this
+sense, it is much larger than <span
+class="math inline">\(V_{n}(z)\)</span>. To reduce error, we replace the
+möbius function with <span class="math inline">\(\lambda^{ \pm}\)</span>
+truncated function such that <span
+class="math display">\[\lambda^{+}(1)=\lambda^{-}(1)=1\]</span> and for
+every <span class="math inline">\(m \geq 2\)</span>, <span
+class="math display">\[\sum_{d \mid m} \lambda^{+}(d) \geqslant 0 .
+\quad \sum_{d \mid m} \lambda^{-}(d) \leqslant 0 .\]</span> Moreover, if
+<span class="math inline">\(\exists D&gt;0\)</span> such that <span
+class="math inline">\(\lambda^{+}(d)=0\)</span> for all <span
+class="math inline">\(d \geq D\)</span>, then we call D a support
+level.<br />
+Suppose that <span class="math inline">\(\lambda^{+}\)</span> and <span
+class="math inline">\(\lambda^{-}\)</span> have <span
+class="math inline">\(D\)</span> as a support level. Then, <span
+class="math display">\[\sum_{(n, P(z))=1} a(n) \leqslant \sum_{n} a(n)
+\sum_{d\mid P(z)} \lambda^{+}(d)\]</span> and by previous <span
+class="math display">\[\sum_{n=1}^{\infty} a(n) G_{n}\left(z,
+\lambda^{-}\right)+R^{-} \leq S(\mathcal{A}, \mathcal{P}, z) \leq
+\sum_{n=1}^{\infty} a(n) G_{n}\left(z, \lambda^{+}\right)+R^{+}\]</span>
+where</p>
+<p><span class="math display">\[G_{n}\left(z, \lambda^{
+\pm}\right)=\sum_{d \mid P(z)} \lambda^{ \pm}(d) g_{n}(d) \text { and }
+R^{ \pm}(z)=\sum_{\substack{d \mid P(z) \\ d&lt;D}} \lambda^{ \pm}(d)
+r(d)\]</span> We then define <span class="math inline">\(\lambda_{1}^{
+\pm}(d)\)</span> over the range <span
+class="math inline">\(P_{1}\)</span>, which <span
+class="math inline">\(P=P_1 \cup \mathcal{Q}\)</span> and for <span
+class="math inline">\(d \mid P(z)\)</span> it can be uniquely factored
+as <span class="math inline">\(d_1d_2\)</span> which <span
+class="math inline">\(d_{1}\)</span> is relatively prime to the product
+of all primes in <span class="math inline">\(\mathcal{Q}\)</span> ,
+denoted as <span class="math inline">\(Q\)</span>. Now we define <span
+class="math display">\[\lambda^{ \pm}(d)=\lambda_{1}^{ \pm}(d)
+\mu\left(d_{2}\right)\]</span> for <span class="math inline">\(d\mid
+P(z)\)</span>, otherwise it is 0; and it is easy to verify that it
+satisfies the previous properties of <span
+class="math inline">\(\mathrm{d}^{ \pm}\)</span>, and it has support
+level <span class="math inline">\(DQ\)</span> . It follows that <span
+class="math display">\[G_{n}\left(z, \lambda^{ \pm}\right)=G_{n}\left(z,
+\lambda_{1}^{ \pm}\right) \prod_{q\mid
+Q(z)}\left(1-g_{n}(q)\right)\]</span> where <span
+class="math display">\[G_{n}\left(z, \lambda_{1}^{
+\pm}\right)=\sum_{d_{1} \mid P_1(z)} \lambda_{1}^{
+\pm}\left(d_{1}\right) g_{n}\left(d_{1}\right).\]</span> and we replace
+<span class="math inline">\(R^{ \pm}\)</span> by <span
+class="math inline">\(\pm R(D Q, \mathcal{P}, z)\)</span> for <span
+class="math inline">\(\left|\lambda_{1}^{ \pm}(d)\right| \leqslant
+1\)</span>, <span class="math display">\[R(D Q, \mathcal{P}, z)=\sum_{d
+\mid P(z)}|r(d)| .\]</span> We then construct the truncated function
+based on the subset of integers from 1 to <span
+class="math inline">\(D\)</span>.<br />
+Let <span class="math inline">\(\beta&gt;0, D&gt;0\)</span> be real
+numbers. Let <span class="math inline">\(D^{+}\)</span> be the set
+consisting of 1 of all square-free numbers <span
+class="math inline">\(d\)</span> with <span
+class="math display">\[d=p_{1} p_{2} \cdots p_{k}\]</span> such that
+<span
+class="math display">\[p_{k}&lt;\cdots&lt;p_{2}&lt;p_{1}&lt;D\]</span>
+and <span class="math display">\[p_{m}&lt;\left(\frac{D}{p_{1} p_{2}
+\cdots p_{m}}\right)^{\frac{1}{\beta}}\]</span> for all odd integers
+<span class="math inline">\(m\)</span>. Let <span
+class="math inline">\(D^{-}\)</span> be the set consisting of 1 and all
+square-free numbers <span class="math inline">\(d\)</span> with <span
+class="math display">\[d=p_{1} \cdots p_{k}\]</span> such that <span
+class="math display">\[p_{k}&lt;\cdots&lt;p_{2}&lt;p_{1}&lt;D\]</span>
+and <span class="math display">\[p_{m}&lt;\left(\frac{D}{p_{1} \cdots
+p_{m}}\right)^{1 / \beta}\]</span> for all even integers. Let <span
+class="math display">\[P(D)=\prod_{\substack{p \in \mathcal{P} \\ p &lt;
+D}} p\]</span> and define</p>
+<p><span class="math display">\[\lambda^{+}(d)= \begin{cases}\mu(d)
+&amp; \text { if } d \in D^{+} \text {and } d \mid P(D) \\ 0 &amp; \text
+{ otherwise }\end{cases}\]</span> and <span
+class="math display">\[\lambda^{-}(d)= \begin{cases}\mu(d) &amp; \text {
+if } d \in D^{-} \text {and } d \mid P(D) \\ 0 &amp; \text { otherwise
+}\end{cases}\]</span> It follows from the definition that these
+functions are truncation functions. Recall that for <span
+class="math inline">\(g(d)\)</span> multiplicative function, we have
+<span class="math display">\[V(z)=\prod_{\substack{p \in \mathcal{P} \\
+p&lt;z}}(1-g(p))=\sum_{p \mid P(z)} \mu(d) g(d) .\]</span> By induction
+over the number of primes in an interval, we get <span
+class="math display">\[\sum_{\substack{p \in \mathcal{P} \\ w \leqslant
+p&lt;z}} g(p) V(p)=V(w)\]</span> Combining with the construction of
+<span class="math inline">\(\lambda \pm(d)\)</span>, we obtain the
+following Lemma.<br />
+Lemma. Let <span class="math inline">\(\beta\)</span> be a set of
+primes. For <span class="math inline">\(\beta&gt;1\)</span> and <span
+class="math inline">\(2 \leqslant z \leqslant D\)</span>. Let <span
+class="math display">\[y_{m}=y_{m}\left(\beta, D, p_{1} \cdots
+p_{m}\right)=\left(\frac{D}{p_{1} \cdots p_{m}}\right)^{1 / \beta}
+.\]</span> Let <span class="math inline">\(\lambda^{ \pm}(d)\)</span> be
+the truncated functions we defined previously, let <span
+class="math display">\[G\left(z, \lambda^{ \pm}\right)=\sum_{d\mid P(z)}
+\lambda^{ \pm}(d) g(d) .\]</span> Let <span
+class="math display">\[\operatorname{T_n}(D, z)=
+\sum_{\substack{p_1,...,p_n\in\mathcal{P}\\ y_n\leq
+p_n&lt;...&lt;p_1&lt;z \\ p_m&lt;y_m \ \forall m&lt;n,m\equiv
+n(\operatorname{mod} 2)}} g(p_1...p_n)V(p_n)\]</span> Then <span
+class="math display">\[G\left(z,
+\lambda^{+}\right)=V(z)+\sum_{\substack{n=1 \\ n\equiv
+1(\operatorname{mod} 2)}}^{\infty} \operatorname{T_n}(D, z)\]</span> and
+<span class="math display">\[G\left(z,
+\lambda^{-}\right)=V(z)-\sum_{\substack{n=1 \\ n \equiv 0(\bmod
+2)}}^{\infty} \operatorname{T_n}(D, z)\]</span> Moreover, <span
+class="math display">\[\operatorname{T_n}(D, z) \geqslant 0\]</span> for
+all <span class="math inline">\(n \geq 1\)</span>, and <span
+class="math display">\[G\left(z, \lambda^{-}\right) \leqslant V(z)
+\leqslant G\left(z, \lambda^{+}\right) .\]</span> If <span
+class="math inline">\(\beta \leqslant \frac{\log D}{\log z}=s\)</span>,
+then <span class="math display">\[\operatorname{T_n}(D, z)=0 \text { for
+} n \leqslant s-\beta \text {. }\]</span> Now we consider for <span
+class="math inline">\(\beta=2\)</span> from now on. From the
+combinatorial identity of <span class="math inline">\(V(z)\)</span>, we
+obtain <span class="math display">\[T_{1}(D, z)=V\left(D^{1 /
+3}\right)-V(z) .\]</span> Let <span class="math inline">\(z \geq
+2\)</span> and choose <span class="math inline">\(D \geqslant z\)</span>
+if <span class="math inline">\(n\)</span> is odd, <span
+class="math inline">\(D \geq z^{2}\)</span> if <span
+class="math inline">\(n\)</span> is even, so <span
+class="math display">\[s=\frac{\log D}{\log z} \geqslant \begin{cases}1
+&amp; \text { if } n \text { is odd. } \\ 2 &amp; \text { if } n \text {
+is even. }\end{cases}\]</span> Let <span class="math inline">\(n \geq
+2\)</span>. If <span class="math inline">\(n\)</span> is even, or if
+<span class="math inline">\(n\)</span> is odd and <span
+class="math inline">\(s \geqslant 3\)</span>, then <span
+class="math display">\[T_{n}(D, z)=\sum_{\substack{p \in \mathcal{P} \\
+p&lt;z}} g(p) T_{n-1}\left(\frac{D}{p}, p\right) .\]</span> If <span
+class="math inline">\(n\)</span> is odd and <span
+class="math inline">\(1 \leqslant S \leqslant 3\)</span>, then <span
+class="math display">\[\operatorname{T_n}(D, z)=\sum_{\substack{p \in
+\mathcal{P} \\ p &lt; D^{\frac{1}{3}}}} g(p) T_{n-1}\left(\frac{D}{p},
+p\right)\]</span> If there exists some <span
+class="math inline">\(K&gt;1\)</span> such that <span
+class="math display">\[\prod_{\substack{p \in \mathcal{P} \\ u \leqslant
+p&lt;z}}(1-g(p))^{-1} \leqslant K \frac{\log z}{\log u}\]</span> for all
+<span class="math inline">\(u\)</span> such that <span
+class="math inline">\(1&lt;U&lt;Z\)</span>. Let <span
+class="math inline">\(\Phi\)</span> be a continuous, increasing function
+on the interval <span class="math inline">\([w, z]\)</span> which <span
+class="math inline">\(w\)</span> is any real number in <span
+class="math inline">\((1, z)\)</span>. Then the step function <span
+class="math display">\[\begin{aligned}
+S(u) &amp; =\sum_{u \leqslant p(z} g(p) V(p) \\
+&amp; =V(u)-V(z) \\
+&amp; \leqslant\left(K \frac{\log z}{\log u}-1\right) V(z) .
+\end{aligned}\]</span> Let <span class="math display">\[w \leqslant
+p_{k}&lt;p_{k-1}&lt;\cdots&lt;p_{1}&lt;z\]</span> which <span
+class="math inline">\(p_{i} \in \mathcal{P}\)</span> for all <span
+class="math inline">\(i=1, \ldots, k\)</span>.<br />
+Then <span class="math display">\[\begin{aligned}
+\sum_{\substack{p \in \mathcal{P} \\
+w \leq p&lt;z}} g(p) V(p) \Phi(p)= &amp; \sum_{i=1}^{k}
+g\left(p_{i}\right) V\left(p_{i}\right) \Phi\left(p_{i}\right) \\
+= &amp; S\left(p_{k}\right)
+\Phi(w)+S\left(p_{k}\right)\left(\Phi\left(p_{w}\right)-\Phi(w)\right)
+\\
+&amp; +\sum_{i=1}^{k-1}
+S\left(p_{i}\right)\left(\Phi\left(p_{i}\right)-\Phi\left(p_{i+1}\right)\right)
+\\
+= &amp; S(w) \Phi(w)+\int_{w}^{z} S(u) d \Phi(u) \\
+= &amp; S(z) \Phi(z)-\int_{w}^{z} \Phi(u) d S(u) \\
+\leq &amp; (K-1) V(z) \Phi(z)-K V(z) \int_{w}^{z} \Phi(u)
+d\left(\frac{\log z}{\log u}\right).
+\end{aligned}\]</span> For <span class="math inline">\(n=1\)</span> and
+<span class="math inline">\(1 \leqslant s \leqslant 3\)</span>, we have
+<span class="math display">\[\begin{aligned}
+\frac{T_{1}(D, z)}{V(z)} &amp;
+=\frac{V\left(D^{\frac{1}{3}}\right)}{V(z)}-1 \\
+&amp; =\prod_{D^{\frac{1}{3}} \leq p&lt;z}(1-g(p))^{-1}-1 \\
+&amp; \leqslant 3 K \frac{\log D}{\log z}-1 \\
+&amp; &lt;\left(\frac{3}{s}-1\right)+3(K-1)
+\end{aligned}\]</span> Let <span class="math inline">\(n \geq
+2\)</span>. If <span class="math inline">\(n\)</span> is even or if
+<span class="math inline">\(n\)</span> is odd and <span
+class="math inline">\(s \geq 3\)</span>, then <span
+class="math display">\[T_{n}(D, z)=\sum_{\substack{p \in \mathcal{P} \\
+p&lt;z}} g(p) T_{n-1}\left(\frac{D}{p}, p\right)\]</span> To bound <span
+class="math inline">\(T_{n}(D, z)\)</span>, it is natural to assume that
+there is a sequence of smooth functions times <span
+class="math inline">\(V(z)\)</span>. Let <span
+class="math inline">\(\Psi_{n}\)</span> be a sequence of smooth
+functions, and define <span
+class="math display">\[\Phi_{n}(u)=\Psi_{n}\left(\frac{\log D}{\log
+n}-1\right)\]</span> and claim that <span
+class="math display">\[T_{n}(D, z)&lt;V(z) \Psi_{n}(s) .\]</span> then
+by the induction hypothesis, it follows that <span
+class="math display">\[\begin{aligned}
+T_{n}(D, z) &amp; &lt;\sum_{\substack{p \in \mathcal{P} \\
+p&lt;z}} g(p) V(p) \Psi_{n-1}\left(\frac{\log D}{\log p}-1\right) \\
+&amp; =\sum_{\substack{p \in \mathcal{P} \\
+p&lt;z}} g(p) V(p) \Phi_{n}(p) \\
+&amp; =(K-1) V(z) \Psi_{n-1}(s-1)-\frac{K V(z)}{s} \int_{1}^{z}
+\Phi_{n-1}(u) d \frac{\log D}{\log u} \\
+&amp; =(K-1) V(z) \Psi_{n-1}(s-1)+\frac{K V(z)}{s} \int_{s}^{\infty}
+\Psi_{n-1}(t-1) d t
+\end{aligned}\]</span> Similarly, for <span class="math inline">\(n \geq
+3\)</span> odd and <span class="math inline">\(1 \leqslant s \leqslant
+3\)</span>, then <span class="math display">\[T_{n}(D, z)&lt;(K-1) V(z)
+\Psi_{n-1}(2)+K V(z) \int_{3}^{\infty} \Psi_{n-1}(t-1) d t\]</span> then
+by choosing an appropiate <span class="math inline">\(K\)</span>, and
+constructing <span class="math inline">\(\Psi_{n}\)</span> carefully,
+the induction can be proved. Let <span
+class="math display">\[\Psi_{n}(s)=f_{n}(s)+h_{n}(s)\]</span> which
+<span class="math inline">\(f_n \ \text{and} \ h_n\)</span> are
+constructed as follows. For <span class="math inline">\(s \geqslant
+1\)</span>. let <span class="math inline">\(R_{n}(s)\)</span> be the
+open convex region of Euclidean space consisting of all points <span
+class="math inline">\(\left(t_{1}, \ldots, t_{n}\right) \in
+\mathbb{R}^{n}\)</span> s.t. <span
+class="math display">\[\begin{aligned}
+&amp; 0&lt;t_{n}&lt;\cdots&lt;t_{1}&lt;\frac{1}{s}, \\
+&amp; t_{1}+\cdots+t_{n}+2 t_{n}&gt;1 .
+\end{aligned}\]</span> and <span
+class="math display">\[t_{1}+\ldots+t_{m}+2 t_{m}&lt;1 \ \ \ \ \text{if}
+\ m&lt;n \ \text{and} \ m \equiv n(\operatorname{mod} 2).\]</span> For
+<span class="math inline">\(n \geqslant 1\)</span> and <span
+class="math inline">\(s \geqslant 1\)</span>, we define the function
+<span class="math inline">\(f_{n}(s)\)</span> by the integral <span
+class="math display">\[s f_{n}(s)=\int \cdots \int_{R_{n}(s)} \frac{d
+t_{1} \cdots d t_{n}}{\left(t_{1} \cdots t_{n}\right) t_{n}}\]</span> We
+construct <span class="math inline">\(h(s)\)</span> for <span
+class="math inline">\(s \geqslant 1\)</span> as follows: <span
+class="math display">\[h(s)=\left\{\begin{array}{lll}
+e^{-2} &amp; \text { for } &amp; 1 \leq s \leq 2 \\
+e^{-s} &amp; \text { for } &amp; 2 \leq s \leq 3 \\
+3 s^{-1} e^{-s} &amp; \text { for } &amp; s \geq 3
+\end{array}\right.\]</span> For <span class="math inline">\(s \geqslant
+2\)</span>, let <span class="math display">\[H(s)=\int_{s}^{\infty}
+h(t-1) d t .\]</span> Let <span
+class="math display">\[\alpha=\frac{H(2)}{2 h(2)}=\frac{e^{2}
+H(2)}{2}=1-\frac{1}{2 e}+\frac{3 e^{2}}{2} \int_{0}^{\infty} t^{-1}
+e^{-t} d t\]</span> We define the number <span
+class="math display">\[\tau=\alpha+5(K-1)+11 e^{-8}\]</span> and the
+function <span class="math display">\[h_{n}(s)=(K-1) \tau^{n} e^{10}
+h(s)\]</span> and in this case we let <span
+class="math inline">\(K\)</span> satisfy <span
+class="math display">\[1&lt;K&lt;1+\frac{1}{200} .\]</span> And after
+some calculation, we obtain the bound for <span
+class="math inline">\(T_{n}(D, z)\)</span>, and for <span
+class="math inline">\(s \geqslant 1\)</span> <span
+class="math display">\[F(s)=1+\sum_{\substack{n=1 \\ n\equiv 1
+(\operatorname{mod}2)}}^{\infty}
+f_{n}(s)=1+O\left(e^{-s}\right),\]</span> and for <span
+class="math inline">\(s \geqslant 2\)</span> <span
+class="math display">\[f(s)=1-\sum_{\substack{n=1 \\ n \equiv
+0(\operatorname{mod} 2)}}^{\infty} f_{n}(s)=1+O\left(e^{-s}\right)
+.\]</span> Moreover, let <span
+class="math inline">\(0&lt;\varepsilon&lt;\frac{1}{200},
+K=1+\varepsilon\)</span>, and <span class="math display">\[G\left(z,
+\lambda^{ \pm}\right)=\sum_{d \mid P(z)} \lambda^{ \pm}(d) g(d)
+.\]</span> Then <span class="math display">\[G\left(z,
+\lambda^{+}\right)&lt;V(z)\left(F(s)+\varepsilon
+e^{14-\varepsilon}\right)\]</span> and <span
+class="math display">\[G\left(z,
+\lambda^{-}\right)&gt;V(z)\left(f(s)-\varepsilon
+e^{14-\varepsilon}\right)\]</span> Combining with the fact that this
+<span class="math inline">\(\lambda^{ \pm}\)</span> is actually <span
+class="math inline">\(\lambda_{1}^{ \pm}\)</span> defined on <span
+class="math inline">\(\mathcal{P}_{1}\)</span>, we obtain the following
+theorem.<br />
+Theorem(Jurkat-Richert). Let <span
+class="math inline">\(\mathcal{A}=\{a(n)\}_{n=1}^{\infty}\)</span> such
+that <span class="math display">\[a(n) \geqslant 0 \quad \forall n \in
+\mathbb{N} \text { and }|\mathcal{A}|=\sum_{n=1}^{\infty}
+a(n)&lt;\infty\]</span> Let <span class="math inline">\(P\)</span> be a
+set of primes, for <span class="math inline">\(z \geq 2\)</span>, let
+<span class="math display">\[P(z)=\prod_{\substack{p \in \mathcal{P} \\
+p&lt;z}} p .\]</span> Let <span class="math display">\[S(\mathcal{A},
+\mathcal{P}, z)=\sum_{\substack{n=1 \\(n, P(z))=1}}^{\infty}
+a(n)\]</span> For every <span class="math inline">\(n \geqslant
+1\)</span>, let <span class="math inline">\(g_{n}(d)\)</span> be a
+multiplicative function s.t. <span
+class="math display">\[0&lt;g_{n}(p)&lt;1 \quad \forall p \in P
+.\]</span> Define <span class="math inline">\(r(d)\)</span> by <span
+class="math display">\[\left|\mathcal{A}_{d}\right|=\sum_{d=1}^{\infty}
+a(n)=\sum_{n=1}^{\infty} a(n) g(d)+r(d)\]</span> Let <span
+class="math inline">\(\mathcal{Q}\)</span> be a finite subset of <span
+class="math inline">\(\mathcal{P}\)</span>, and let <span
+class="math inline">\(Q\)</span> be the product of primes in <span
+class="math inline">\(\mathcal{Q}\)</span>. Suppose that, for some <span
+class="math inline">\(\varepsilon\)</span> satisfying <span
+class="math inline">\(0&lt;\varepsilon&lt;\frac{1}{200}\)</span>, the
+inequality <span class="math display">\[\prod_{\substack{p \in
+\mathcal{P} \backslash \mathcal{Q} \\ u \leq
+p&lt;z}}^{\pi}\left(1-g_{n}(p)\right)^{-1}&lt;(1+\varepsilon) \frac{\log
+z}{\log u}\]</span> holds for all <span
+class="math inline">\(1&lt;u&lt;z\)</span>. Then for any <span
+class="math inline">\(D \geq z\)</span> there is the upper bound <span
+class="math display">\[S(\mathcal{A}, \mathcal{P},
+z)&lt;\left(F(s)+\varepsilon e^{14-\varepsilon} \right)X+R\]</span> and
+for <span class="math inline">\(D \geqslant z^{2}\)</span> there is the
+lower bound <span class="math display">\[S(\mathcal{A}, \mathcal{P},
+z)&gt;\left(f(s)-\varepsilon e^{14-\varepsilon}\right) X+R\]</span>
+where <span class="math display">\[\begin{aligned}
+s &amp; =\frac{\log D}{\log z}, \\
+X &amp; =\sum_{n=1}^{\infty} a(n) \prod_{p\mid P(z)}(1-g(p)).
+\end{aligned}\]</span> and the remainder term is <span
+class="math display">\[R=\sum_{\substack{d \mid  P(z) \\ d &lt;
+DQ}}|r(d)| .\]</span> If there is a multiplicative function <span
+class="math inline">\(g(d)\)</span> s.t. <span
+class="math inline">\(g_{n}(d)=g(d)\)</span> for all <span
+class="math inline">\(n\)</span>, then <span
+class="math display">\[X=V(z)|\mathcal{A}|,\]</span> where <span
+class="math display">\[V(z)=\prod_{p \mid P(z)}(1-g(p)) .\]</span><br />
+Moreover, through the recurrence property of <span
+class="math inline">\(f_{n}(s)\)</span>, we could obtain and solve a
+differential-difference equation that allows us to compute initial
+values for <span class="math inline">\(F(s)\)</span> and <span
+class="math inline">\(f(s)\)</span>, <span
+class="math display">\[F(s)=\frac{2 e^{\gamma}}{s} \quad \text { for }
+\quad 1 \leqslant s \leqslant 3 \text {, }\]</span> and <span
+class="math display">\[f(s)=\frac{2 e^{\gamma} \log (s-1)}{s} \quad
+\text { for } \quad z \leqslant s \leqslant 4 \text {, }\]</span> where
+<span class="math inline">\(\gamma\)</span> is the Euler’s constant.</p>
+</body>
+</html>
